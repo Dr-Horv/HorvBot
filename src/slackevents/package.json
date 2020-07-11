@@ -2,8 +2,5 @@
   "name": "sample-http",
   "version": "0.0.1",
   "main": "index.js",
-  "dependencies": {
-    "@slack/web-api": "5.10.0",
-    "@slack/events-api": "2.3.3"
-  }
+  "dependencies": {}
 }
