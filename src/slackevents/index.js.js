@@ -35,6 +35,7 @@ exports.handler = (req, res) => {
   }
 
   if (req.body.type === "url_verification") {
+    console.log("Responding 200 to challenge");
     res.status(200).send({ challenge: req.body.challenge });
     return;
   }
