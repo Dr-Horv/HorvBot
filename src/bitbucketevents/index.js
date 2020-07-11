@@ -52,7 +52,7 @@ exports.handler = async (req, res) => {
       const prData = doc.data();
       const approvers = [...prData.approvers].filter((a) => a !== body.approval.user.uuid);
       approvers.sort();
-      prRef.update({ approvers });
+      await prRef.update({ approvers });
     }
     return;
   }
