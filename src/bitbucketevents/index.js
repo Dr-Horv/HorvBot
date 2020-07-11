@@ -86,11 +86,15 @@ exports.handler = async (req, res) => {
       console.log("Approvers", approvers);
       await prRef.update({ approvers });
       if (approvers.length === 0) {
-        await removeReaction(
-          prData.channel,
-          prData.messageTimestamp,
-          "white_check_mark"
-        );
+        try {
+          await removeReaction(
+            prData.channel,
+            prData.messageTimestamp,
+            APPROVE_REACTION
+          );
+        } catch (e) {
+          // Ignore if we cannot remove reaction
+        }
       }
     }
     return;
