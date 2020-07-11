@@ -50,7 +50,7 @@ exports.handler = async (req, res) => {
         .map((linkObject) => {
           const url = linkObject.url;
           try {
-            return url.split("/").slice(3).join("-").replace("pull-requests", "pullrequests");
+            return url.split("/").slice(3).join(":").replace("pull-requests", "pullrequests");
           } catch (e) {
             return undefined;
           }
