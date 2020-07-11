@@ -12,6 +12,8 @@ const getPrIdentifier = (body) => {
 exports.handler = (req, res) => {
   console.log("headers: ", JSON.stringify(req.headers));
   console.log("body: ", JSON.stringify(req.body));
+  const body = req.body;
+  const headers = req.headers;
 
   const eventKey = headers["x-event-key"];
   if (eventKey === "pullrequest:approved") {
