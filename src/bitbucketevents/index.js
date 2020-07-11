@@ -55,6 +55,7 @@ exports.handler = async (req, res) => {
         (a) => a !== body.approval.user.uuid
       );
       approvers.sort();
+      console.log("Approvers", approvers);
       await prRef.update({ approvers });
     }
     return;

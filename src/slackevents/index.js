@@ -16,7 +16,11 @@ exports.handler = async (req, res) => {
   const timestamp = req.headers["x-slack-request-timestamp"];
   const sig_basestring = "v0:" + timestamp + ":" + body;
   const my_signature =
-    "v0=" + crypto.createHmac("sha256", process.env.slack_signing_secret).update(sig_basestring).digest("hex");
+    "v0=" +
+    crypto
+      .createHmac("sha256", process.env.slack_signing_secret)
+      .update(sig_basestring)
+      .digest("hex");
   const slack_signature = req.headers["x-slack-signature"];
 
   if (!(my_signature === slack_signature)) {
@@ -50,7 +54,11 @@ exports.handler = async (req, res) => {
         .map((linkObject) => {
           const url = linkObject.url;
           try {
-            return url.split("/").slice(3).join(":").replace("pull-requests", "pullrequests");
+            return url
+              .split("/")
+              .slice(3)
+              .join(":")
+              .replace("pull-requests", "pullrequests");
           } catch (e) {
             return undefined;
           }
@@ -59,14 +67,18 @@ exports.handler = async (req, res) => {
       console.log("Identified following links: ", prIdentifiers);
 
       await Promise.all(
-        prIdentifiers.map((pr) => {
+        prIdentifiers.map(async (pr) => {
           const docRef = db.collection("prs").doc(pr);
-          return docRef.set({
-            tracking: true,
-            identifier: pr,
-            approvers: [],
-            merged: false,
-          });
+          const doc = await docRef.get();
+          if (!doc.exists) {
+            console.log("Starting to track: ", pr);
+            return docRef.set({
+              tracking: true,
+              identifier: pr,
+              approvers: [],
+              merged: false,
+            });
+          }
         })
       );
       return;
