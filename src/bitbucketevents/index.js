@@ -5,8 +5,8 @@
  * @param {!express:Response} res HTTP response context.
  */
 exports.handler = (req, res) => {
-  console.log("headers: ", req.headers);
-  console.log("body: ", req.body);
+  console.log("headers: ", JSON.stringify(req.headers));
+  console.log("body: ", JSON.stringify(req.body));
 
   res.status(200).send({});
 };
