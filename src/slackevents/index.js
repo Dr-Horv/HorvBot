@@ -5,6 +5,8 @@ admin.initializeApp();
 
 const db = admin.firestore();
 
+const PR_COLLECTION_NAME = "prs";
+
 /**
  * Responds to any HTTP request.
  *
@@ -68,7 +70,7 @@ exports.handler = async (req, res) => {
 
       await Promise.all(
         prIdentifiers.map(async (pr) => {
-          const docRef = db.collection("prs").doc(pr);
+          const docRef = db.collection(PR_COLLECTION_NAME).doc(pr);
           const doc = await docRef.get();
           if (!doc.exists) {
             const channel = req.body.event.channel;

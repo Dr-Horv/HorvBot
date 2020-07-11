@@ -20,6 +20,9 @@ const removeReaction = async (channel, timestamp, reaction) => {
   return web.reactions.remove({ name: reaction, channel, timestamp });
 };
 
+const APPROVE_REACTION = "white_check_mark";
+const MERGE_REACTION = "merge";
+const PR_COLLECTION_NAME = "prs";
 /**
  * Responds to any HTTP request.
  *
@@ -35,7 +38,7 @@ exports.handler = async (req, res) => {
     const pr = getPrIdentifier(body);
     console.log("PR " + pr + " was approved");
     res.status(200).send({});
-    const prRef = db.collection("prs").doc(pr);
+    const prRef = db.collection(PR_COLLECTION_NAME).doc(pr);
     const doc = await prRef.get();
     if (!doc.exists) {
       console.log("No document for " + pr);
@@ -54,7 +57,7 @@ exports.handler = async (req, res) => {
         await sendReaction(
           prData.channel,
           prData.messageTimestamp,
-          ":white_check_mark:"
+          APPROVE_REACTION
         );
       }
     }
@@ -65,7 +68,7 @@ exports.handler = async (req, res) => {
     const pr = getPrIdentifier(body);
     console.log("PR " + pr + " was unapproved");
     res.status(200).send({});
-    const prRef = db.collection("prs").doc(pr);
+    const prRef = db.collection(PR_COLLECTION_NAME).doc(pr);
     const doc = await prRef.get();
     if (!doc.exists) {
       console.log("No document for " + pr);
@@ -86,7 +89,7 @@ exports.handler = async (req, res) => {
         await removeReaction(
           prData.channel,
           prData.messageTimestamp,
-          ":white_check_mark:"
+          "white_check_mark"
         );
       }
     }
@@ -97,7 +100,7 @@ exports.handler = async (req, res) => {
     const pr = getPrIdentifier(body);
     console.log("PR " + pr + " was merged");
     res.status(200).send({});
-    const prRef = db.collection("prs").doc(pr);
+    const prRef = db.collection(PR_COLLECTION_NAME).doc(pr);
     const doc = await prRef.get();
     if (!doc.exists) {
       console.log("No document for " + pr);
@@ -110,7 +113,7 @@ exports.handler = async (req, res) => {
       }
       await Promise.all([
         prRef.update({ merged: true, tracking: false }),
-        sendReaction(prData.channel, prData.messageTimestamp, ":merge:"),
+        sendReaction(prData.channel, prData.messageTimestamp, MERGE_REACTION),
       ]);
     }
     return;
