@@ -93,6 +93,30 @@ exports.handler = async (req, res) => {
     return;
   }
 
+  if (eventKey === "pullrequest:fulfilled") {
+    const pr = getPrIdentifier(body);
+    console.log("PR " + pr + " was merged");
+    res.status(200).send({});
+    const prRef = db.collection("prs").doc(pr);
+    const doc = await prRef.get();
+    if (!doc.exists) {
+      console.log("No document for " + pr);
+      return;
+    } else {
+      console.log("Document data:", doc.data());
+      const prData = doc.data();
+      if (!prData.tracking) {
+        return;
+      }
+      await Promise.all([
+          prRef.update({ merged: true, tracking: false })
+          sendReaction( prData.channel,
+              prData.messageTimestamp,
+              ":merge:")
+      ])
+    }
+    return;
+  }
   console.log("headers: ", JSON.stringify(req.headers));
   console.log("body: ", JSON.stringify(req.body));
   res.status(200).send({});
