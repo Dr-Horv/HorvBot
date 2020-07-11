@@ -6,6 +6,10 @@ steps:
       - bitbucketevents
       - --source=src/bitbucketevents
       - --trigger-http
+      - --runtime nodejs10
+      - --region europe-west1
+      - --entry-point handler
+      - --runtime nodejs10
 
   - name: "gcr.io/cloud-builders/gcloud"
     args:
@@ -14,3 +18,7 @@ steps:
       - slackevents
       - --source=src/slackevents
       - --trigger-http
+      - --runtime nodejs10
+      - --region europe-west1
+      - --entry-point handler
+      - --runtime nodejs10
