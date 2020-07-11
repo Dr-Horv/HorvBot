@@ -3,9 +3,21 @@ admin.initializeApp();
 
 const db = admin.firestore();
 
+const { WebClient } = require("@slack/web-api");
+const token = process.env.SLACK_TOKEN;
+const web = new WebClient(token);
+
 const getPrIdentifier = (body) => {
   const prLink = body["pullrequest"]["links"]["self"]["href"];
   return prLink.split("/").slice(5).join(":");
+};
+
+const sendReaction = async (channel, timestamp, reaction) => {
+  return web.reactions.add({ name: reaction, channel, timestamp });
+};
+
+const removeReaction = async (channel, timestamp, reaction) => {
+  return web.reactions.remove({ name: reaction, channel, timestamp });
 };
 
 /**
@@ -31,10 +43,20 @@ exports.handler = async (req, res) => {
     } else {
       console.log("Document data:", doc.data());
       const prData = doc.data();
+      if (!prData.tracking) {
+        return;
+      }
       const approvers = [...prData.approvers, body.approval.user.uuid];
       approvers.sort();
       console.log("Approvers", approvers);
       await prRef.update({ approvers });
+      if (approvers.length > 0) {
+        await sendReaction(
+          prData.channel,
+          prData.messageTimestamp,
+          ":white_check_mark:"
+        );
+      }
     }
     return;
   }
@@ -51,12 +73,22 @@ exports.handler = async (req, res) => {
     } else {
       console.log("Document data:", doc.data());
       const prData = doc.data();
+      if (!prData.tracking) {
+        return;
+      }
       const approvers = [...prData.approvers].filter(
         (a) => a !== body.approval.user.uuid
       );
       approvers.sort();
       console.log("Approvers", approvers);
       await prRef.update({ approvers });
+      if (approvers.length === 0) {
+        await removeReaction(
+          prData.channel,
+          prData.messageTimestamp,
+          ":white_check_mark:"
+        );
+      }
     }
     return;
   }
