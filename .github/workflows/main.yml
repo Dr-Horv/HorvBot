@@ -24,7 +24,7 @@ jobs:
       uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
       with:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
-        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        service_account_key: horvbot
         export_default_credentials: true
     
     - run: gcloud info
@@ -32,7 +32,7 @@ jobs:
     - name: Deploy with gcloud
       run: |
         gcloud functions deploy slackevents \
-          --project ${{ secrets.GCP_PROJECT_ID }} \
+          --project horvbot \
           --region europe-west1 \
           --source https://source.developers.google.com/projects/horvbot/repos/github_dr-horv_horvbot/moveable-aliases/master/paths/src/slackevents/ \
           --trigger-http \
