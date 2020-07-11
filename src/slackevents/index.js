@@ -72,16 +72,17 @@ exports.handler = async (req, res) => {
           const doc = await docRef.get();
           if (!doc.exists) {
             const channel = req.body.event.channel;
-            const messageTimestamp = req.body.event.channel.message_ts;
-            console.log("Starting to track: ", pr);
-            return docRef.set({
+            const messageTimestamp = req.body.event.message_ts;
+            const data = {
               channel,
               messageTimestamp,
               tracking: true,
               identifier: pr,
               approvers: [],
               merged: false,
-            });
+            };
+            console.log("Starting to track: ", pr, data);
+            return docRef.set(data);
           }
         })
       );
