@@ -1,3 +1,8 @@
+const admin = require("firebase-admin");
+admin.initializeApp();
+
+const db = admin.firestore();
+
 const getPrIdentifier = (body) => {
   const prLink = body["pullrequest"]["links"]["self"]["href"];
   return prLink.split("/").slice(5).join("/");
@@ -9,7 +14,7 @@ const getPrIdentifier = (body) => {
  * @param {!express:Request} req HTTP request context.
  * @param {!express:Response} res HTTP response context.
  */
-exports.handler = (req, res) => {
+exports.handler = async (req, res) => {
   const body = req.body;
   const headers = req.headers;
 
@@ -18,6 +23,18 @@ exports.handler = (req, res) => {
     const pr = getPrIdentifier(body);
     console.log("PR " + pr + " was approved");
     res.status(200).send({});
+    const prRef = db.collection("prs").doc(pr);
+    const doc = await prRef.get();
+    if (!doc.exists) {
+      console.log("No document for " + pr);
+      return;
+    } else {
+      console.log("Document data:", doc.data());
+      const prData = doc.data();
+      const approvers = [...prData.approvers, body.approval.user.uuid];
+      approvers.sort();
+      prRef.update({ approvers });
+    }
     return;
   }
 
@@ -25,6 +42,18 @@ exports.handler = (req, res) => {
     const pr = getPrIdentifier(body);
     console.log("PR " + pr + " was unapproved");
     res.status(200).send({});
+    const prRef = db.collection("prs").doc(pr);
+    const doc = await prRef.get();
+    if (!doc.exists) {
+      console.log("No document for " + pr);
+      return;
+    } else {
+      console.log("Document data:", doc.data());
+      const prData = doc.data();
+      const approvers = [...prData.approvers].filter((a) => a !== body.approval.user.uuid);
+      approvers.sort();
+      prRef.update({ approvers });
+    }
     return;
   }
 

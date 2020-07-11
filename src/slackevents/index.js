@@ -1,12 +1,17 @@
 const crypto = require("crypto");
 
+const admin = require("firebase-admin");
+admin.initializeApp();
+
+const db = admin.firestore();
+
 /**
  * Responds to any HTTP request.
  *
  * @param {!express:Request} req HTTP request context.
  * @param {!express:Response} res HTTP response context.
  */
-exports.handler = (req, res) => {
+exports.handler = async (req, res) => {
   const body = req.rawBody.toString();
   const timestamp = req.headers["x-slack-request-timestamp"];
   const sig_basestring = "v0:" + timestamp + ":" + body;
@@ -39,6 +44,7 @@ exports.handler = (req, res) => {
 
   if (req.body.type === "event_callback") {
     if (req.body.event.type === "link_shared") {
+      res.status(200).send({});
       const links = req.body.event.links;
       const prIdentifiers = links
         .map((linkObject) => {
@@ -51,7 +57,18 @@ exports.handler = (req, res) => {
         })
         .filter((item) => item !== undefined);
       console.log("Identified following links: ", prIdentifiers);
-      res.status(200).send({});
+
+      await Promise.all(
+        prIdentifiers.map((pr) => {
+          const docRef = db.collection("prs").doc(pr);
+          return docRef.set({
+            tracking: true,
+            identifier: pr,
+            approvers: [],
+            merged: false,
+          });
+        })
+      );
       return;
     }
   }
