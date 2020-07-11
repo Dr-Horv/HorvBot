@@ -1,5 +1,5 @@
 steps:
-  - name: "Deploy bitbucketevents"
+  - name: "gcr.io/cloud-builders/gcloud"
     args:
       - functions
       - deploy
@@ -7,7 +7,7 @@ steps:
       - --source=src/bitbucketevents
       - --trigger-http
 
-  - name: "Deploy slackevents"
+  - name: "gcr.io/cloud-builders/gcloud"
     args:
       - functions
       - deploy
