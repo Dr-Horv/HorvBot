@@ -109,11 +109,9 @@ exports.handler = async (req, res) => {
         return;
       }
       await Promise.all([
-          prRef.update({ merged: true, tracking: false })
-          sendReaction( prData.channel,
-              prData.messageTimestamp,
-              ":merge:")
-      ])
+        prRef.update({ merged: true, tracking: false }),
+        sendReaction(prData.channel, prData.messageTimestamp, ":merge:"),
+      ]);
     }
     return;
   }
