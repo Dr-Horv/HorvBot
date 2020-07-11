@@ -11,14 +11,12 @@ exports.handler = (req, res) => {
   const body = req.rawBody.toString();
   const timestamp = req.headers["x-slack-request-timestamp"];
   const sig_basestring = "v0:" + timestamp + ":" + body;
-  console.log("sig_basestring", sig_basestring);
   const my_signature =
     "v0=" + crypto.createHmac("sha256", process.env.slack_signing_secret).update(sig_basestring).digest("hex");
-
   const slack_signature = req.headers["x-slack-signature"];
 
   if (!(my_signature === slack_signature)) {
-    console.log("invalid signature");
+    console.log("invalid signature for ", sig_basestring);
     res
       .status(403)
       .send(
@@ -39,7 +37,19 @@ exports.handler = (req, res) => {
     res.status(200).send({ challenge: req.body.challenge });
     return;
   }
-  console.log("Got: " + req.body);
 
+  if (req.body.type === "event_callback") {
+    if (req.body.event.type === "link_shared") {
+      const links = req.body.event.links;
+      const prIdentifiers = links.map((linkObject) => {
+        const url = linkObject.url;
+        return url.split("/").slice(3).join("/");
+      });
+      console.log("Identified following links: ", prIdentifiers);
+      res.status(200).send({});
+    }
+  }
+
+  console.log("Unhandled: " + JSON.stringify(req.body));
   res.status(200).send({});
 };
