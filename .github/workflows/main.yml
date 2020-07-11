@@ -27,6 +27,7 @@ jobs:
         service_account_key: ${{ secrets.GCP_SA_KEY }}
         export_default_credentials: true
 
+    
     - name: Deploy with gcloud
       run: |
         gcloud functions deploy slackevents \
@@ -34,5 +35,5 @@ jobs:
           --region europe-west1 \
           --source https://source.developers.google.com/projects/horvbot/repos/github_dr-horv_horvbot/moveable-aliases/master/paths/src/slackevents/ \
           --trigger-http \
-           --runtime nodejs10 \
+          --runtime nodejs10 \
           --entry-point handler
