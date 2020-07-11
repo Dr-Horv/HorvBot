@@ -1,0 +1,16 @@
+steps:
+  - name: "Deploy bitbucketevents"
+    args:
+      - functions
+      - deploy
+      - bitbucketevents
+      - --source=src/bitbucketevents
+      - --trigger-http
+
+  - name: "Deploy slackevents"
+    args:
+      - functions
+      - deploy
+      - slackevents
+      - --source=src/slackevents
+      - --trigger-http
