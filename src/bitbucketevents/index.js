@@ -5,7 +5,7 @@ const db = admin.firestore();
 
 const getPrIdentifier = (body) => {
   const prLink = body["pullrequest"]["links"]["self"]["href"];
-  return prLink.split("/").slice(5).join("-");
+  return prLink.split("/").slice(5).join(":");
 };
 
 /**
