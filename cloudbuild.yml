@@ -6,9 +6,9 @@ steps:
       - bitbucketevents
       - --source=https://source.developers.google.com/projects/horvbot/repos/github_dr-horv_horvbot/moveable-aliases/master/paths/src/bitbucketevents/
       - --trigger-http
-      - --runtime nodejs10
-      - --region europe-west1
-      - --entry-point handler
+      - --runtime=nodejs10
+      - --region=europe-west1
+      - --entry-point=handler
     waitFor: ["-"]
 
   - name: "gcr.io/cloud-builders/gcloud"
@@ -18,7 +18,7 @@ steps:
       - slackevents
       - --source=https://source.developers.google.com/projects/horvbot/repos/github_dr-horv_horvbot/moveable-aliases/master/paths/src/slackevents/
       - --trigger-http
-      - --runtime nodejs10
-      - --region europe-west1
-      - --entry-point handler
+      - --runtime=nodejs10
+      - --region=europe-west1
+      - --entry-point=handler
     waitFor: ["-"]
