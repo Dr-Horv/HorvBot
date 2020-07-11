@@ -10,8 +10,6 @@ const getPrIdentifier = (body) => {
  * @param {!express:Response} res HTTP response context.
  */
 exports.handler = (req, res) => {
-  console.log("headers: ", JSON.stringify(req.headers));
-  console.log("body: ", JSON.stringify(req.body));
   const body = req.body;
   const headers = req.headers;
 
@@ -19,12 +17,18 @@ exports.handler = (req, res) => {
   if (eventKey === "pullrequest:approved") {
     const pr = getPrIdentifier(body);
     console.log("PR " + pr + " was approved");
+    res.status(200).send({});
+    return;
   }
 
   if (eventKey === "pullrequest:unapproved") {
     const pr = getPrIdentifier(body);
     console.log("PR " + pr + " was unapproved");
+    res.status(200).send({});
+    return;
   }
 
+  console.log("headers: ", JSON.stringify(req.headers));
+  console.log("body: ", JSON.stringify(req.body));
   res.status(200).send({});
 };

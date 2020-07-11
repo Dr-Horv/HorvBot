@@ -7,7 +7,6 @@ const crypto = require("crypto");
  * @param {!express:Response} res HTTP response context.
  */
 exports.handler = (req, res) => {
-  console.log("start");
   const body = req.rawBody.toString();
   const timestamp = req.headers["x-slack-request-timestamp"];
   const sig_basestring = "v0:" + timestamp + ":" + body;
@@ -41,12 +40,19 @@ exports.handler = (req, res) => {
   if (req.body.type === "event_callback") {
     if (req.body.event.type === "link_shared") {
       const links = req.body.event.links;
-      const prIdentifiers = links.map((linkObject) => {
-        const url = linkObject.url;
-        return url.split("/").slice(3).join("/");
-      });
+      const prIdentifiers = links
+        .map((linkObject) => {
+          const url = linkObject.url;
+          try {
+            return url.split("/").slice(3).join("/");
+          } catch (e) {
+            return undefined;
+          }
+        })
+        .filter((item) => item !== undefined);
       console.log("Identified following links: ", prIdentifiers);
       res.status(200).send({});
+      return;
     }
   }
 
