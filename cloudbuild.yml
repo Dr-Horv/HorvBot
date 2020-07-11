@@ -10,6 +10,7 @@ steps:
       - --region europe-west1
       - --entry-point handler
       - --runtime nodejs10
+    waitFor: ["-"]
 
   - name: "gcr.io/cloud-builders/gcloud"
     args:
@@ -22,3 +23,4 @@ steps:
       - --region europe-west1
       - --entry-point handler
       - --runtime nodejs10
+    waitFor: ["-"]
