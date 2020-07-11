@@ -33,7 +33,8 @@ exports.handler = async (req, res) => {
       const prData = doc.data();
       const approvers = [...prData.approvers, body.approval.user.uuid];
       approvers.sort();
-      prRef.update({ approvers });
+      console.log("Approvers", approvers);
+      await prRef.update({ approvers });
     }
     return;
   }
@@ -50,7 +51,9 @@ exports.handler = async (req, res) => {
     } else {
       console.log("Document data:", doc.data());
       const prData = doc.data();
-      const approvers = [...prData.approvers].filter((a) => a !== body.approval.user.uuid);
+      const approvers = [...prData.approvers].filter(
+        (a) => a !== body.approval.user.uuid
+      );
       approvers.sort();
       await prRef.update({ approvers });
     }
