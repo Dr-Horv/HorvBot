@@ -58,7 +58,7 @@ exports.handler = async (req, res) => {
           try {
             return url
               .split("/")
-              .slice(3, 5)
+              .slice(3, 7)
               .join(":")
               .replace("pull-requests", "pullrequests");
           } catch (e) {
