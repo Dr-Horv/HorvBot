@@ -50,7 +50,6 @@ exports.handler = async (req, res) => {
 
   if (req.body.type === "event_callback") {
     if (req.body.event.type === "link_shared") {
-      res.status(200).send({});
       const links = req.body.event.links;
       const prIdentifiers = links
         .map((linkObject) => {

@@ -70,7 +70,6 @@ exports.handler = async (req, res) => {
   if (eventKey === "pullrequest:unapproved") {
     const pr = getPrIdentifier(body);
     console.log("PR " + pr + " was unapproved");
-    res.status(200).send({});
     const prRef = db.collection(PR_COLLECTION_NAME).doc(pr);
     const doc = await prRef.get();
     if (!doc.exists) {
