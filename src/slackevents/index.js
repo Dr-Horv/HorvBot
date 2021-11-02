@@ -88,6 +88,7 @@ exports.handler = async (req, res) => {
           }
         })
       );
+      res.status(200).send({});
       return;
     }
   }

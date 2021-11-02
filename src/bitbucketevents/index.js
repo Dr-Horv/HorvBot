@@ -37,16 +37,18 @@ exports.handler = async (req, res) => {
   if (eventKey === "pullrequest:approved") {
     const pr = getPrIdentifier(body);
     console.log("PR " + pr + " was approved");
-    res.status(200).send({});
+
     const prRef = db.collection(PR_COLLECTION_NAME).doc(pr);
     const doc = await prRef.get();
     if (!doc.exists) {
       console.log("No document for " + pr);
+      res.status(200).send({});
       return;
     } else {
       console.log("Document data:", doc.data());
       const prData = doc.data();
       if (!prData.tracking) {
+        res.status(200).send({});
         return;
       }
       const approvers = [...prData.approvers, body.approval.user.uuid];
@@ -61,6 +63,7 @@ exports.handler = async (req, res) => {
         );
       }
     }
+    res.status(200).send({});
     return;
   }
 
@@ -72,11 +75,13 @@ exports.handler = async (req, res) => {
     const doc = await prRef.get();
     if (!doc.exists) {
       console.log("No document for " + pr);
+      res.status(200).send({});
       return;
     } else {
       console.log("Document data:", doc.data());
       const prData = doc.data();
       if (!prData.tracking) {
+        res.status(200).send({});
         return;
       }
       const approvers = [...prData.approvers].filter(
@@ -97,22 +102,24 @@ exports.handler = async (req, res) => {
         }
       }
     }
+    res.status(200).send({});
     return;
   }
 
   if (eventKey === "pullrequest:fulfilled") {
     const pr = getPrIdentifier(body);
     console.log("PR " + pr + " was merged");
-    res.status(200).send({});
     const prRef = db.collection(PR_COLLECTION_NAME).doc(pr);
     const doc = await prRef.get();
     if (!doc.exists) {
       console.log("No document for " + pr);
+      res.status(200).send({});
       return;
     } else {
       console.log("Document data:", doc.data());
       const prData = doc.data();
       if (!prData.tracking) {
+        res.status(200).send({});
         return;
       }
       await Promise.all([
@@ -120,6 +127,7 @@ exports.handler = async (req, res) => {
         sendReaction(prData.channel, prData.messageTimestamp, MERGE_REACTION),
       ]);
     }
+    res.status(200).send({});
     return;
   }
   console.log("headers: ", JSON.stringify(req.headers));
