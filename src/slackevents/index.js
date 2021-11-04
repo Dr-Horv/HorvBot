@@ -49,6 +49,7 @@ exports.handler = async (req, res) => {
   }
 
   if (req.body.type === "event_callback") {
+    console.log('event body', JSON.stringify(req.body))
     if (req.body.event.type === "link_shared") {
       const links = req.body.event.links;
       const prIdentifiers = links
