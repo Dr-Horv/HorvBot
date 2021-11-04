@@ -75,19 +75,21 @@ exports.handler = async (req, res) => {
         prIdentifiers.map(async (pr) => {
           const docRef = db.collection(PR_COLLECTION_NAME).doc(pr);
           const doc = await docRef.get();
+          const data = {
+            channel,
+            messageTimestamp,
+            tracking: true,
+            identifier: pr,
+            approvers: [],
+            merged: false,
+          };
           if (!doc.exists) {
             const channel = req.body.event.channel;
             const messageTimestamp = req.body.event.message_ts;
-            const data = {
-              channel,
-              messageTimestamp,
-              tracking: true,
-              identifier: pr,
-              approvers: [],
-              merged: false,
-            };
             console.log("Starting to track: ", pr, data);
             return docRef.set(data);
+          } else {
+            console.log('PR already tracked: ', pr, data);
           }
         })
       );
