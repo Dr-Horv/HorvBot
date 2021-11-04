@@ -75,6 +75,8 @@ exports.handler = async (req, res) => {
         prIdentifiers.map(async (pr) => {
           const docRef = db.collection(PR_COLLECTION_NAME).doc(pr);
           const doc = await docRef.get();
+          const channel = req.body.event.channel;
+          const messageTimestamp = req.body.event.message_ts;
           const data = {
             channel,
             messageTimestamp,
@@ -83,9 +85,8 @@ exports.handler = async (req, res) => {
             approvers: [],
             merged: false,
           };
+          
           if (!doc.exists) {
-            const channel = req.body.event.channel;
-            const messageTimestamp = req.body.event.message_ts;
             console.log("Starting to track: ", pr, data);
             return docRef.set(data);
           } else {
