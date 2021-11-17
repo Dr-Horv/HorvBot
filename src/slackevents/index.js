@@ -50,7 +50,8 @@ exports.handler = async (req, res) => {
 
   if (req.body.type === "event_callback") {
     if (req.body.event.type === "link_shared") {
-      if(req.body.source === "composer") {
+      if (req.body.event.channel === "COMPOSER") {
+        // Ignore links sent from composer
         return;
       }
 
@@ -85,12 +86,12 @@ exports.handler = async (req, res) => {
             approvers: [],
             merged: false,
           };
-          
+
           if (!doc.exists) {
             console.log("Starting to track: ", pr, data);
             return docRef.set(data);
           } else {
-            console.log('PR already tracked: ', pr, data);
+            console.log("PR already tracked: ", pr, data);
           }
         })
       );
