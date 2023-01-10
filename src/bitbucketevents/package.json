@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "main": "index.js",
   "dependencies": {
-    "firebase-admin": "^8.13.0",
+    "firebase-admin": "^11.4.1",
     "@slack/web-api": "^5.10.0"
   },
   "devDependencies": {
