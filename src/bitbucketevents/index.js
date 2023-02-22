@@ -22,6 +22,7 @@ const removeReaction = async (channel, timestamp, reaction) => {
 
 const APPROVE_REACTION = "white_check_mark";
 const MERGE_REACTION = "merge";
+const COMMENT_REACTION = "speech_balloon";
 const PR_COLLECTION_NAME = "prs";
 /**
  * Responds to any HTTP request.
@@ -32,6 +33,10 @@ const PR_COLLECTION_NAME = "prs";
 exports.handler = async (req, res) => {
   const body = req.body;
   const headers = req.headers;
+
+  if (body.actor) {
+    console.log("actor: ", body.actor);
+  }
 
   const eventKey = headers["x-event-key"];
   if (eventKey === "pullrequest:approved") {
@@ -124,6 +129,33 @@ exports.handler = async (req, res) => {
       await Promise.all([
         prRef.update({ merged: true, tracking: false }),
         sendReaction(prData.channel, prData.messageTimestamp, MERGE_REACTION),
+      ]);
+    }
+    res.status(200).send({});
+    return;
+  }
+
+  if (eventKey === "pullrequest:comment_created") {
+    const pr = getPrIdentifier(body);
+    console.log("PR " + pr + " received a comment");
+
+    // Filter out if the comment is from Tophatting
+    const prRef = db.collection(PR_COLLECTION_NAME).doc(pr);
+    const doc = await prRef.get();
+    if (!doc.exists) {
+      console.log("No document for " + pr);
+      res.status(200).send({});
+      return;
+    } else {
+      console.log("Document data:", doc.data());
+      const prData = doc.data();
+      if (!prData.tracking || prData.hasComment) {
+        res.status(200).send({});
+        return;
+      }
+      await Promise.all([
+        prRef.update({ hasComment: true }),
+        sendReaction(prData.channel, prData.messageTimestamp, COMMENT_REACTION),
       ]);
     }
     res.status(200).send({});
