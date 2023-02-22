@@ -48,7 +48,7 @@ async function eventCommentCreated(res, body) {
     res.status(200).send({});
     return;
   } else {
-    console.log("Document data:", JSON.stringify(doc.data()));
+    console.log("Document data:", doc.data());
     const prData = doc.data();
     if (!prData.tracking || prData.hasComment) {
       res.status(200).send({});
@@ -88,7 +88,7 @@ exports.handler = async (req, res) => {
       res.status(200).send({});
       return;
     } else {
-      console.log("Document data:", JSON.stringify(doc.data()));
+      console.log("Document data:", doc.data());
       const prData = doc.data();
       if (!prData.tracking) {
         res.status(200).send({});
@@ -120,7 +120,7 @@ exports.handler = async (req, res) => {
       res.status(200).send({});
       return;
     } else {
-      console.log("Document data:", JSON.stringify(doc.data()));
+      console.log("Document data:", doc.data());
       const prData = doc.data();
       if (!prData.tracking) {
         res.status(200).send({});
@@ -159,7 +159,7 @@ exports.handler = async (req, res) => {
       res.status(200).send({});
       return;
     } else {
-      console.log("Document data:", JSON.stringify(doc.data()));
+      console.log("Document data:", doc.data());
       const prData = doc.data();
       if (!prData.tracking) {
         res.status(200).send({});
