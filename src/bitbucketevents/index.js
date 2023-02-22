@@ -136,6 +136,7 @@ exports.handler = async (req, res) => {
   }
 
   if (eventKey === "pullrequest:comment_created") {
+    console.log("eventKey comment");
     const pr = getPrIdentifier(body);
     console.log("PR " + pr + " received a comment");
 
