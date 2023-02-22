@@ -35,7 +35,7 @@ exports.handler = async (req, res) => {
   const headers = req.headers;
 
   if (body.actor) {
-    console.log("actor: ", body.actor);
+    console.log("actor: ", JSON.stringify(body.actor));
   }
 
   const eventKey = headers["x-event-key"];
@@ -141,6 +141,15 @@ exports.handler = async (req, res) => {
     console.log("PR " + pr + " received a comment");
 
     // Filter out if the comment is from Tophatting
+    if (body.actor.uuid === "638e5b97213a315af34b01de") {
+      console.log(
+        "The commenter is the Tophatting user. Do not track this. ",
+        body.actor.uuid
+      );
+      res.status(200).send({});
+      return;
+    }
+
     const prRef = db.collection(PR_COLLECTION_NAME).doc(pr);
     const doc = await prRef.get();
     if (!doc.exists) {
@@ -150,7 +159,8 @@ exports.handler = async (req, res) => {
     } else {
       console.log("Document data:", doc.data());
       const prData = doc.data();
-      if (!prData.tracking || prData.hasComment) {
+      // if (!prData.tracking || prData.hasComment) {
+      if (!prData.tracking) {
         res.status(200).send({});
         return;
       }
