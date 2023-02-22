@@ -73,7 +73,7 @@ exports.handler = async (req, res) => {
   const headers = req.headers;
 
   if (body.actor) {
-    console.log("actor: ", JSON.stringify(body.actor));
+    console.log("actor: ", body.actor);
   }
 
   const eventKey = headers["x-event-key"];
@@ -175,7 +175,30 @@ exports.handler = async (req, res) => {
   }
 
   if (eventKey === "pullrequest:comment_created") {
-    await eventCommentCreated(res, body);
+    console.log("eventKey comment");
+    const pr = getPrIdentifier(body);
+    console.log("PR " + pr + " received a comment");
+
+    // Filter out if the comment is from Tophatting
+    const prRef = db.collection(PR_COLLECTION_NAME).doc(pr);
+    const doc = await prRef.get();
+    if (!doc.exists) {
+      console.log("No document for " + pr);
+      res.status(200).send({});
+      return;
+    } else {
+      console.log("Document data:", doc.data());
+      const prData = doc.data();
+      if (!prData.tracking || prData.hasComment) {
+        res.status(200).send({});
+        return;
+      }
+      await Promise.all([
+        prRef.update({ hasComment: true }),
+        sendReaction(prData.channel, prData.messageTimestamp, COMMENT_REACTION),
+      ]);
+    }
+    res.status(200).send({});
     return;
   }
   console.log("headers: ", JSON.stringify(req.headers));
