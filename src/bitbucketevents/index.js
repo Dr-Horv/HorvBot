@@ -24,6 +24,43 @@ const APPROVE_REACTION = "white_check_mark";
 const MERGE_REACTION = "merge";
 const COMMENT_REACTION = "speech_balloon";
 const PR_COLLECTION_NAME = "prs";
+
+async function commentCreated(res, body) {
+  console.log("eventKey comment");
+  const pr = getPrIdentifier(body);
+  console.log("PR " + pr + " received a comment");
+
+  // Filter out if the comment is from Tophatting
+  if (body.actor.account_id === "638e5b97213a315af34b01de") {
+    console.log(
+      "The commenter is the Tophatting user. Do not track this. ",
+      body.actor.account_id
+    );
+    res.status(200).send({});
+    return;
+  }
+
+  const prRef = db.collection(PR_COLLECTION_NAME).doc(pr);
+  const doc = await prRef.get();
+  if (!doc.exists) {
+    console.log("No document for " + pr);
+    res.status(200).send({});
+    return;
+  } else {
+    console.log("Document data:", doc.data());
+    const prData = doc.data();
+    if (!prData.tracking || prData.hasComment) {
+      res.status(200).send({});
+      return;
+    }
+    await Promise.all([
+      prRef.update({ hasComment: true }),
+      sendReaction(prData.channel, prData.messageTimestamp, COMMENT_REACTION),
+    ]);
+  }
+  res.status(200).send({});
+}
+
 /**
  * Responds to any HTTP request.
  *
@@ -136,40 +173,7 @@ exports.handler = async (req, res) => {
   }
 
   if (eventKey === "pullrequest:comment_created") {
-    console.log("eventKey comment");
-    const pr = getPrIdentifier(body);
-    console.log("PR " + pr + " received a comment");
-
-    // Filter out if the comment is from Tophatting
-    if (body.actor.uuid === "638e5b97213a315af34b01de") {
-      console.log(
-        "The commenter is the Tophatting user. Do not track this. ",
-        body.actor.uuid
-      );
-      res.status(200).send({});
-      return;
-    }
-
-    const prRef = db.collection(PR_COLLECTION_NAME).doc(pr);
-    const doc = await prRef.get();
-    if (!doc.exists) {
-      console.log("No document for " + pr);
-      res.status(200).send({});
-      return;
-    } else {
-      console.log("Document data:", doc.data());
-      const prData = doc.data();
-      // if (!prData.tracking || prData.hasComment) {
-      if (!prData.tracking) {
-        res.status(200).send({});
-        return;
-      }
-      await Promise.all([
-        prRef.update({ hasComment: true }),
-        sendReaction(prData.channel, prData.messageTimestamp, COMMENT_REACTION),
-      ]);
-    }
-    res.status(200).send({});
+    await commentCreated(res, body);
     return;
   }
   console.log("headers: ", JSON.stringify(req.headers));
