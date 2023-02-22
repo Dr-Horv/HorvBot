@@ -165,10 +165,6 @@ exports.handler = async (req, res) => {
   const body = req.body;
   const headers = req.headers;
 
-  if (body.actor) {
-    console.log("actor: ", JSON.stringify(body.actor));
-  }
-
   const eventKey = headers["x-event-key"];
   if (eventKey === "pullrequest:approved") {
     await eventApproved(res, body);
