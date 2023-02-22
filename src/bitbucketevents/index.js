@@ -26,7 +26,6 @@ const COMMENT_REACTION = "speech_balloon";
 const PR_COLLECTION_NAME = "prs";
 
 async function eventCommentCreated(res, body) {
-  console.log("eventKey comment");
   const pr = getPrIdentifier(body);
   console.log("PR " + pr + " received a comment");
   const tophattingAccountId = "638e5b97213a315af34b01de";
