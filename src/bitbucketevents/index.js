@@ -62,100 +62,6 @@ async function eventCommentCreated(res, body) {
   res.status(200).send({});
 }
 
-async function eventFulfilled(res, body) {
-  const pr = getPrIdentifier(body);
-  console.log("PR " + pr + " was merged");
-
-  const prRef = db.collection(PR_COLLECTION_NAME).doc(pr);
-  const doc = await prRef.get();
-  if (!doc.exists) {
-    console.log("No document for " + pr);
-    res.status(200).send({});
-    return;
-  } else {
-    console.log("Document data:", JSON.stringify(doc.data()));
-    const prData = doc.data();
-    if (!prData.tracking) {
-      res.status(200).send({});
-      return;
-    }
-    await Promise.all([
-      prRef.update({ merged: true, tracking: false }),
-      sendReaction(prData.channel, prData.messageTimestamp, MERGE_REACTION),
-    ]);
-  }
-  res.status(200).send({});
-}
-
-async function eventUnapproved(res, body) {
-  const pr = getPrIdentifier(body);
-  console.log("PR " + pr + " was unapproved");
-  const prRef = db.collection(PR_COLLECTION_NAME).doc(pr);
-  const doc = await prRef.get();
-  if (!doc.exists) {
-    console.log("No document for " + pr);
-    res.status(200).send({});
-    return;
-  } else {
-    console.log("Document data:", JSON.stringify(doc.data()));
-    const prData = doc.data();
-    if (!prData.tracking) {
-      res.status(200).send({});
-      return;
-    }
-    const approvers = [...prData.approvers].filter(
-      (a) => a !== body.approval.user.uuid
-    );
-    approvers.sort();
-    console.log("Approvers", approvers);
-    await prRef.update({ approvers });
-    if (approvers.length === 0) {
-      try {
-        await removeReaction(
-          prData.channel,
-          prData.messageTimestamp,
-          APPROVE_REACTION
-        );
-      } catch (e) {
-        // Ignore if we cannot remove reaction
-      }
-    }
-  }
-  res.status(200).send({});
-}
-
-async function eventApproved(res, body) {
-  const pr = getPrIdentifier(body);
-  console.log("PR " + pr + " was approved");
-
-  const prRef = db.collection(PR_COLLECTION_NAME).doc(pr);
-  const doc = await prRef.get();
-  if (!doc.exists) {
-    console.log("No document for " + pr);
-    res.status(200).send({});
-    return;
-  } else {
-    console.log("Document data:", JSON.stringify(doc.data()));
-    const prData = doc.data();
-    if (!prData.tracking) {
-      res.status(200).send({});
-      return;
-    }
-    const approvers = [...prData.approvers, body.approval.user.uuid];
-    approvers.sort();
-    console.log("Approvers", approvers);
-    await prRef.update({ approvers });
-    if (approvers.length > 0) {
-      await sendReaction(
-        prData.channel,
-        prData.messageTimestamp,
-        APPROVE_REACTION
-      );
-    }
-  }
-  res.status(200).send({});
-}
-
 /**
  * Responds to any HTTP request.
  *
@@ -172,17 +78,99 @@ exports.handler = async (req, res) => {
 
   const eventKey = headers["x-event-key"];
   if (eventKey === "pullrequest:approved") {
-    await eventApproved(res, body);
+    const pr = getPrIdentifier(body);
+    console.log("PR " + pr + " was approved");
+
+    const prRef = db.collection(PR_COLLECTION_NAME).doc(pr);
+    const doc = await prRef.get();
+    if (!doc.exists) {
+      console.log("No document for " + pr);
+      res.status(200).send({});
+      return;
+    } else {
+      console.log("Document data:", JSON.stringify(doc.data()));
+      const prData = doc.data();
+      if (!prData.tracking) {
+        res.status(200).send({});
+        return;
+      }
+      const approvers = [...prData.approvers, body.approval.user.uuid];
+      approvers.sort();
+      console.log("Approvers", approvers);
+      await prRef.update({ approvers });
+      if (approvers.length > 0) {
+        await sendReaction(
+          prData.channel,
+          prData.messageTimestamp,
+          APPROVE_REACTION
+        );
+      }
+    }
+    res.status(200).send({});
     return;
   }
 
   if (eventKey === "pullrequest:unapproved") {
-    await eventUnapproved(res, body);
+    const pr = getPrIdentifier(body);
+    console.log("PR " + pr + " was unapproved");
+    const prRef = db.collection(PR_COLLECTION_NAME).doc(pr);
+    const doc = await prRef.get();
+    if (!doc.exists) {
+      console.log("No document for " + pr);
+      res.status(200).send({});
+      return;
+    } else {
+      console.log("Document data:", JSON.stringify(doc.data()));
+      const prData = doc.data();
+      if (!prData.tracking) {
+        res.status(200).send({});
+        return;
+      }
+      const approvers = [...prData.approvers].filter(
+        (a) => a !== body.approval.user.uuid
+      );
+      approvers.sort();
+      console.log("Approvers", approvers);
+      await prRef.update({ approvers });
+      if (approvers.length === 0) {
+        try {
+          await removeReaction(
+            prData.channel,
+            prData.messageTimestamp,
+            APPROVE_REACTION
+          );
+        } catch (e) {
+          // Ignore if we cannot remove reaction
+        }
+      }
+    }
+    res.status(200).send({});
     return;
   }
 
   if (eventKey === "pullrequest:fulfilled") {
-    await eventFulfilled(res, body);
+    const pr = getPrIdentifier(body);
+    console.log("PR " + pr + " was merged");
+
+    const prRef = db.collection(PR_COLLECTION_NAME).doc(pr);
+    const doc = await prRef.get();
+    if (!doc.exists) {
+      console.log("No document for " + pr);
+      res.status(200).send({});
+      return;
+    } else {
+      console.log("Document data:", JSON.stringify(doc.data()));
+      const prData = doc.data();
+      if (!prData.tracking) {
+        res.status(200).send({});
+        return;
+      }
+      await Promise.all([
+        prRef.update({ merged: true, tracking: false }),
+        sendReaction(prData.channel, prData.messageTimestamp, MERGE_REACTION),
+      ]);
+    }
+    res.status(200).send({});
     return;
   }
 
