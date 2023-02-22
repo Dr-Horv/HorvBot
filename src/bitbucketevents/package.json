@@ -2,6 +2,7 @@
   "name": "sample-http",
   "version": "0.0.1",
   "main": "index.js",
+  "type": "module",
   "dependencies": {
     "firebase-admin": "^8.13.0",
     "@slack/web-api": "^5.10.0"
