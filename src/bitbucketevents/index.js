@@ -43,14 +43,18 @@ async function eventChangeRequestCreated(res, body) {
       res.status(200).send({});
       return;
     }
-    const changeRequestCreators = [
-      ...prData.changeRequestCreators,
-      body.changes_request.user.uuid,
-    ];
+    const changeRequestCreators = prData.changeRequestCreators || [];
+    const changeRequestUserUuid = body.changes_request.user.uuid;
+    if (changeRequestCreators.includes(changeRequestUserUuid)) {
+      res.status(200).send({});
+      return;
+    }
+
+    changeRequestCreators.push(changeRequestUserUuid);
     changeRequestCreators.sort();
     console.log("Change request creators", changeRequestCreators);
     await prRef.update({ changeRequestCreators });
-    if (changeRequestCreators.length > 0) {
+    if (changeRequestCreators.length === 1) {
       await sendReaction(
         prData.channel,
         prData.messageTimestamp,
@@ -78,7 +82,8 @@ async function eventChangeRequestRemoved(res, body) {
       res.status(200).send({});
       return;
     }
-    const changeRequestCreators = [...prData.changeRequestCreators].filter(
+
+    const changeRequestCreators = (prData.changeRequestCreators || []).filter(
       (a) => a !== body.changes_request.user.uuid
     );
     changeRequestCreators.sort();
@@ -176,9 +181,10 @@ async function eventUnapproved(res, body) {
       res.status(200).send({});
       return;
     }
-    const approvers = [...prData.approvers].filter(
+    const approvers = (prData.approvers || []).filter(
       (a) => a !== body.approval.user.uuid
     );
+
     approvers.sort();
     console.log("Approvers", approvers);
     await prRef.update({ approvers });
@@ -214,11 +220,18 @@ async function eventApproved(res, body) {
       res.status(200).send({});
       return;
     }
-    const approvers = [...prData.approvers, body.approval.user.uuid];
+    const approvers = prData.approvers || [];
+    const approvalUserUuid = body.approval.user.uuid;
+    if (approvers.includes(approvalUserUuid)) {
+      res.status(200).send({});
+      return;
+    }
+
+    approvers.push(changeRequestUserUuid);
     approvers.sort();
     console.log("Approvers", approvers);
     await prRef.update({ approvers });
-    if (approvers.length > 0) {
+    if (approvers.length === 1) {
       await sendReaction(
         prData.channel,
         prData.messageTimestamp,
