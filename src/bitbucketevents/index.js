@@ -23,7 +23,81 @@ const removeReaction = async (channel, timestamp, reaction) => {
 const APPROVE_REACTION = "white_check_mark";
 const MERGE_REACTION = "merge";
 const COMMENT_REACTION = "speech_balloon";
+const CHANGE_REQUEST_REACTION = "warning";
 const PR_COLLECTION_NAME = "prs";
+
+async function eventChangeRequestCreated(res, body) {
+  const pr = getPrIdentifier(body);
+  console.log("PR " + pr + " received a change request");
+
+  const prRef = db.collection(PR_COLLECTION_NAME).doc(pr);
+  const doc = await prRef.get();
+  if (!doc.exists) {
+    console.log("No document for " + pr);
+    res.status(200).send({});
+    return;
+  } else {
+    console.log("Document data:", JSON.stringify(doc.data()));
+    const prData = doc.data();
+    if (!prData.tracking) {
+      res.status(200).send({});
+      return;
+    }
+    const changeRequestCreators = [
+      ...prData.changeRequestCreators,
+      body.changes_request.user.uuid,
+    ];
+    changeRequestCreators.sort();
+    console.log("Change request creators", changeRequestCreators);
+    await prRef.update({ changeRequestCreators });
+    if (changeRequestCreators.length > 0) {
+      await sendReaction(
+        prData.channel,
+        prData.messageTimestamp,
+        CHANGE_REQUEST_REACTION
+      );
+    }
+  }
+  res.status(200).send({});
+}
+
+async function eventChangeRequestRemoved(res, body) {
+  const pr = getPrIdentifier(body);
+  console.log("PR " + pr + " was unapproved");
+
+  const prRef = db.collection(PR_COLLECTION_NAME).doc(pr);
+  const doc = await prRef.get();
+  if (!doc.exists) {
+    console.log("No document for " + pr);
+    res.status(200).send({});
+    return;
+  } else {
+    console.log("Document data:", JSON.stringify(doc.data()));
+    const prData = doc.data();
+    if (!prData.tracking) {
+      res.status(200).send({});
+      return;
+    }
+    const changeRequestCreators = [...prData.changeRequestCreators].filter(
+      (a) => a !== body.changes_request.user.uuid
+    );
+    changeRequestCreators.sort();
+    console.log("Change request creators", changeRequestCreators);
+    await prRef.update({ changeRequestCreators });
+    if (changeRequestCreators.length === 0) {
+      try {
+        await removeReaction(
+          prData.channel,
+          prData.messageTimestamp,
+          CHANGE_REQUEST_REACTION
+        );
+      } catch (e) {
+        // Ignore if we cannot remove reaction
+      }
+    }
+  }
+  res.status(200).send({});
+}
 
 async function eventCommentCreated(res, body) {
   const pr = getPrIdentifier(body);
@@ -183,6 +257,16 @@ exports.handler = async (req, res) => {
 
   if (eventKey === "pullrequest:comment_created") {
     await eventCommentCreated(res, body);
+    return;
+  }
+
+  if (eventKey === "pullrequest:changes_request_created") {
+    await eventChangeRequestCreated(res, body);
+    return;
+  }
+
+  if (eventKey === "pullrequest:changes_request_removed") {
+    await eventChangeRequestRemoved(res, body);
     return;
   }
   console.log("headers: ", JSON.stringify(req.headers));
