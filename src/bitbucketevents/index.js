@@ -67,7 +67,7 @@ async function eventChangeRequestCreated(res, body) {
 
 async function eventChangeRequestRemoved(res, body) {
   const pr = getPrIdentifier(body);
-  console.log("PR " + pr + " was unapproved");
+  console.log("PR " + pr + " had a change request removed");
 
   const prRef = db.collection(PR_COLLECTION_NAME).doc(pr);
   const doc = await prRef.get();
@@ -227,7 +227,7 @@ async function eventApproved(res, body) {
       return;
     }
 
-    approvers.push(changeRequestUserUuid);
+    approvers.push(approvalUserUuid);
     approvers.sort();
     console.log("Approvers", approvers);
     await prRef.update({ approvers });
