@@ -4,7 +4,7 @@ steps:
       - functions
       - deploy
       - bitbucketevents
-      - --source=https://source.developers.google.com/projects/horvbot/repos/github_dr-horv_horvbot/moveable-aliases/master/paths/src/bitbucketevents/
+      - --source=https://source.developers.google.com/projects/horvbot/repos/github_dr-horv_horvbot/moveable-aliases/develop/paths/src/bitbucketevents/
       - --trigger-http
       - --runtime=nodejs12
       - --region=europe-west1
@@ -16,7 +16,7 @@ steps:
       - functions
       - deploy
       - slackevents
-      - --source=https://source.developers.google.com/projects/horvbot/repos/github_dr-horv_horvbot/moveable-aliases/master/paths/src/slackevents/
+      - --source=https://source.developers.google.com/projects/horvbot/repos/github_dr-horv_horvbot/moveable-aliases/develop/paths/src/slackevents/
       - --trigger-http
       - --runtime=nodejs12
       - --region=europe-west1
