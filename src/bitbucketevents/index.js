@@ -7,6 +7,15 @@ const { WebClient } = require("@slack/web-api");
 const token = process.env.SLACK_TOKEN;
 const web = new WebClient(token);
 
+/**
+ * TODO
+ * Add typescript
+ * Split into own files
+ * Util functions for verifications
+ * Handle web.reaction errors better
+ *
+ */
+
 const getPrIdentifier = (body) => {
   const prLink = body["pullrequest"]["links"]["self"]["href"];
   return prLink.split("/").slice(5).join(":");
@@ -37,12 +46,13 @@ async function eventChangeRequestCreated(res, body) {
     res.status(200).send({});
     return;
   } else {
-    console.log("Document data:", JSON.stringify(doc.data()));
     const prData = doc.data();
+    console.log("Document data:", JSON.stringify(prData));
     if (!prData.tracking) {
       res.status(200).send({});
       return;
     }
+
     const changeRequestCreators = prData.changeRequestCreators || [];
     const changeRequestUserUuid = body.changes_request.user.uuid;
     if (changeRequestCreators.includes(changeRequestUserUuid)) {
@@ -55,12 +65,9 @@ async function eventChangeRequestCreated(res, body) {
     console.log("Change request creators", changeRequestCreators);
     await prRef.update({ changeRequestCreators });
     if (changeRequestCreators.length === 1) {
-      console.log("channel: ", prData.channel);
-      console.log("messageTimestamp: ", prData.messageTimestamp);
-      console.log("CHANGE_REQUEST_REACTION: ", CHANGE_REQUEST_REACTION);
       await sendReaction(
         prData.channel,
-        prData.messageTimestamp || new Date().getTime(),
+        prData.messageTimestamp,
         CHANGE_REQUEST_REACTION
       );
     }
@@ -79,8 +86,8 @@ async function eventChangeRequestRemoved(res, body) {
     res.status(200).send({});
     return;
   } else {
-    console.log("Document data:", JSON.stringify(doc.data()));
     const prData = doc.data();
+    console.log("Document data:", JSON.stringify(prData));
     if (!prData.tracking) {
       res.status(200).send({});
       return;
@@ -94,18 +101,12 @@ async function eventChangeRequestRemoved(res, body) {
     await prRef.update({ changeRequestCreators });
     if (changeRequestCreators.length === 0) {
       try {
-        console.log("channel: ", prData.channel);
-        console.log("messageTimestamp: ", prData.messageTimestamp);
-        console.log("CHANGE_REQUEST_REACTION: ", CHANGE_REQUEST_REACTION);
         await removeReaction(
           prData.channel,
           prData.messageTimestamp,
           CHANGE_REQUEST_REACTION
         );
       } catch (e) {
-        console.log("channel: ", prData.channel);
-        console.log("messageTimestamp: ", prData.messageTimestamp);
-        console.log("CHANGE_REQUEST_REACTION: ", CHANGE_REQUEST_REACTION);
         // Ignore if we cannot remove reaction
       }
     }
@@ -135,12 +136,13 @@ async function eventCommentCreated(res, body) {
     res.status(200).send({});
     return;
   } else {
-    console.log("Document data:", JSON.stringify(doc.data()));
     const prData = doc.data();
+    console.log("Document data:", JSON.stringify(prData));
     if (!prData.tracking || prData.hasComment) {
       res.status(200).send({});
       return;
     }
+
     await Promise.all([
       prRef.update({ hasComment: true }),
       sendReaction(prData.channel, prData.messageTimestamp, COMMENT_REACTION),
@@ -160,12 +162,13 @@ async function eventFulfilled(res, body) {
     res.status(200).send({});
     return;
   } else {
-    console.log("Document data:", JSON.stringify(doc.data()));
     const prData = doc.data();
+    console.log("Document data:", JSON.stringify(prData));
     if (!prData.tracking) {
       res.status(200).send({});
       return;
     }
+
     await Promise.all([
       prRef.update({ merged: true, tracking: false }),
       sendReaction(prData.channel, prData.messageTimestamp, MERGE_REACTION),
@@ -184,12 +187,13 @@ async function eventUnapproved(res, body) {
     res.status(200).send({});
     return;
   } else {
-    console.log("Document data:", JSON.stringify(doc.data()));
     const prData = doc.data();
+    console.log("Document data:", JSON.stringify(prData));
     if (!prData.tracking) {
       res.status(200).send({});
       return;
     }
+
     const approvers = (prData.approvers || []).filter(
       (a) => a !== body.approval.user.uuid
     );
@@ -223,12 +227,13 @@ async function eventApproved(res, body) {
     res.status(200).send({});
     return;
   } else {
-    console.log("Document data:", JSON.stringify(doc.data()));
     const prData = doc.data();
+    console.log("Document data:", JSON.stringify(prData));
     if (!prData.tracking) {
       res.status(200).send({});
       return;
     }
+
     const approvers = prData.approvers || [];
     const approvalUserUuid = body.approval.user.uuid;
     if (approvers.includes(approvalUserUuid)) {
