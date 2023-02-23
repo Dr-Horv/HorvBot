@@ -60,7 +60,7 @@ async function eventChangeRequestCreated(res, body) {
       console.log("CHANGE_REQUEST_REACTION: ", CHANGE_REQUEST_REACTION);
       await sendReaction(
         prData.channel,
-        prData.messageTimestamp,
+        prData.messageTimestamp || "",
         CHANGE_REQUEST_REACTION
       );
     }
