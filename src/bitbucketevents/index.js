@@ -55,6 +55,9 @@ async function eventChangeRequestCreated(res, body) {
     console.log("Change request creators", changeRequestCreators);
     await prRef.update({ changeRequestCreators });
     if (changeRequestCreators.length === 1) {
+      console.log("channel: ", prData.channel);
+      console.log("messageTimestamp: ", prData.messageTimestamp);
+      console.log("CHANGE_REQUEST_REACTION: ", CHANGE_REQUEST_REACTION);
       await sendReaction(
         prData.channel,
         prData.messageTimestamp,
@@ -91,12 +94,18 @@ async function eventChangeRequestRemoved(res, body) {
     await prRef.update({ changeRequestCreators });
     if (changeRequestCreators.length === 0) {
       try {
+        console.log("channel: ", prData.channel);
+        console.log("messageTimestamp: ", prData.messageTimestamp);
+        console.log("CHANGE_REQUEST_REACTION: ", CHANGE_REQUEST_REACTION);
         await removeReaction(
           prData.channel,
           prData.messageTimestamp,
           CHANGE_REQUEST_REACTION
         );
       } catch (e) {
+        console.log("channel: ", prData.channel);
+        console.log("messageTimestamp: ", prData.messageTimestamp);
+        console.log("CHANGE_REQUEST_REACTION: ", CHANGE_REQUEST_REACTION);
         // Ignore if we cannot remove reaction
       }
     }
