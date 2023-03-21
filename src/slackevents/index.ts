@@ -6,7 +6,6 @@ import {
   Response,
 } from "@google-cloud/functions-framework";
 import { LinkSharedEvent } from "./slackEvents";
-import { notEmpty } from "../lib/utils";
 
 admin.initializeApp();
 
@@ -20,6 +19,10 @@ if (SLACK_SIGNING_SECRET === undefined) {
   console.log("Missing 'slack_signing_secret' env variable");
   process.exit(1);
 }
+
+export const notEmpty = <TValue>(
+  value: TValue | null | undefined
+): value is TValue => value !== null && value !== undefined;
 
 const calculateMySignature = (req: Request, body?: string) => {
   const timestamp = req.headers["x-slack-request-timestamp"];
@@ -79,7 +82,7 @@ async function handleLinkSharedEvent(
   console.log("Identified following links: ", prIdentifiers);
 
   await Promise.all(
-    prIdentifiers.map(async (pr) => {
+    prIdentifiers.map(async (pr: string) => {
       const docRef = db.collection(PR_COLLECTION_NAME).doc(pr);
       const doc = await docRef.get();
       const channel = req.body.event.channel;
