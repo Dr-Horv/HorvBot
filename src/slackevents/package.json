@@ -3,9 +3,9 @@
   "version": "0.0.1",
   "main": "build/slackevents/index.js",
   "scripts": {
-    "gcp-build": "npm run build",
+    "gcp-build": "yarn run build",
     "build": "tsc",
-    "start": "npm run build && npx @google-cloud/functions-framework --target=handler"
+    "start": "yarn run build && npx @google-cloud/functions-framework --target=handler"
   },
   "dependencies": {
     "firebase-admin": "^8.13.0"
