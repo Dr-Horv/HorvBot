@@ -147,6 +147,7 @@ export const handler: HttpFunction = async (req, res) => {
 
       const event: LinkSharedEvent = req.body.event;
       await handleLinkSharedEvent(event, req, res);
+      return;
     }
   }
 

@@ -1,2 +1,2 @@
 # HorvBot
-Slackbot for assisting with our Bitbucket workflow using reactions
+Slackbot for assisting with our Bitbucket & GitHub workflows using reactions
