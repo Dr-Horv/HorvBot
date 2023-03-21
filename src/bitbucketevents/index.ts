@@ -1,31 +1,39 @@
-const admin = require("firebase-admin");
+import admin from "firebase-admin";
+import { HttpFunction, Response } from "@google-cloud/functions-framework";
+import { WebClient } from "@slack/web-api";
+import {
+  ApprovalBody,
+  ChangeRequestBody,
+  CommentBody,
+  PrBody,
+} from "./bitbucketEvents";
+import { PrDoc } from "./PrDoc";
+
 admin.initializeApp();
 
 const db = admin.firestore();
 
-const { WebClient } = require("@slack/web-api");
 const token = process.env.SLACK_TOKEN;
 const web = new WebClient(token);
 
-/**
- * TODO
- * Add typescript
- * Split into own files
- * Util functions for verifications
- * Handle web.reaction errors better
- *
- */
+const TOPHATTING_ACCOUNT_ID = "638e5b97213a315af34b01de";
 
-const getPrIdentifier = (body) => {
+const getPrIdentifier = (body: PrBody) => {
   const prLink = body["pullrequest"]["links"]["self"]["href"];
   return prLink.split("/").slice(5).join(":");
 };
 
-const sendReaction = async (channel, timestamp, reaction) => {
+type ReactionFn = (
+  channel: string,
+  timestamp: string,
+  reaction: string
+) => Promise<any>;
+
+const sendReaction: ReactionFn = async (channel, timestamp, reaction) => {
   return web.reactions.add({ name: reaction, channel, timestamp });
 };
 
-const removeReaction = async (channel, timestamp, reaction) => {
+const removeReaction: ReactionFn = async (channel, timestamp, reaction) => {
   return web.reactions.remove({ name: reaction, channel, timestamp });
 };
 
@@ -35,7 +43,10 @@ const COMMENT_REACTION = "speech_balloon";
 const CHANGE_REQUEST_REACTION = "warning";
 const PR_COLLECTION_NAME = "prs";
 
-async function eventChangeRequestCreated(res, body) {
+async function eventChangeRequestCreated(
+  res: Response,
+  body: ChangeRequestBody
+) {
   const pr = getPrIdentifier(body);
   console.log("PR " + pr + " received a change request");
 
@@ -46,7 +57,7 @@ async function eventChangeRequestCreated(res, body) {
     res.status(200).send({});
     return;
   } else {
-    const prData = doc.data();
+    const prData: PrDoc = doc.data() as PrDoc;
     console.log("Document data:", JSON.stringify(prData));
     if (!prData.tracking) {
       res.status(200).send({});
@@ -75,7 +86,10 @@ async function eventChangeRequestCreated(res, body) {
   res.status(200).send({});
 }
 
-async function eventChangeRequestRemoved(res, body) {
+async function eventChangeRequestRemoved(
+  res: Response,
+  body: ChangeRequestBody
+) {
   const pr = getPrIdentifier(body);
   console.log("PR " + pr + " had a change request removed");
 
@@ -86,7 +100,7 @@ async function eventChangeRequestRemoved(res, body) {
     res.status(200).send({});
     return;
   } else {
-    const prData = doc.data();
+    const prData = doc.data() as PrDoc;
     console.log("Document data:", JSON.stringify(prData));
     if (!prData.tracking) {
       res.status(200).send({});
@@ -114,13 +128,12 @@ async function eventChangeRequestRemoved(res, body) {
   res.status(200).send({});
 }
 
-async function eventCommentCreated(res, body) {
+async function eventCommentCreated(res: Response, body: CommentBody) {
   const pr = getPrIdentifier(body);
   console.log("PR " + pr + " received a comment");
-  const tophattingAccountId = "638e5b97213a315af34b01de";
 
   // Do not add comment from Tophatting since it's not relevant in Slack
-  if (body.actor.account_id === tophattingAccountId) {
+  if (body.actor.account_id === TOPHATTING_ACCOUNT_ID) {
     console.log(
       "The commenter is the Tophatting user. Do not track this.",
       body.actor.account_id
@@ -136,7 +149,7 @@ async function eventCommentCreated(res, body) {
     res.status(200).send({});
     return;
   } else {
-    const prData = doc.data();
+    const prData = doc.data() as PrDoc;
     console.log("Document data:", JSON.stringify(prData));
     if (!prData.tracking || prData.hasComment) {
       res.status(200).send({});
@@ -151,7 +164,7 @@ async function eventCommentCreated(res, body) {
   res.status(200).send({});
 }
 
-async function eventFulfilled(res, body) {
+async function eventFulfilled(res: Response, body: PrBody) {
   const pr = getPrIdentifier(body);
   console.log("PR " + pr + " was merged");
 
@@ -162,7 +175,7 @@ async function eventFulfilled(res, body) {
     res.status(200).send({});
     return;
   } else {
-    const prData = doc.data();
+    const prData = doc.data() as PrDoc;
     console.log("Document data:", JSON.stringify(prData));
     if (!prData.tracking) {
       res.status(200).send({});
@@ -177,7 +190,7 @@ async function eventFulfilled(res, body) {
   res.status(200).send({});
 }
 
-async function eventUnapproved(res, body) {
+async function eventUnapproved(res: Response, body: ApprovalBody) {
   const pr = getPrIdentifier(body);
   console.log("PR " + pr + " was unapproved");
   const prRef = db.collection(PR_COLLECTION_NAME).doc(pr);
@@ -187,7 +200,7 @@ async function eventUnapproved(res, body) {
     res.status(200).send({});
     return;
   } else {
-    const prData = doc.data();
+    const prData = doc.data() as PrDoc;
     console.log("Document data:", JSON.stringify(prData));
     if (!prData.tracking) {
       res.status(200).send({});
@@ -216,7 +229,7 @@ async function eventUnapproved(res, body) {
   res.status(200).send({});
 }
 
-async function eventApproved(res, body) {
+async function eventApproved(res: Response, body: ApprovalBody) {
   const pr = getPrIdentifier(body);
   console.log("PR " + pr + " was approved");
 
@@ -227,7 +240,7 @@ async function eventApproved(res, body) {
     res.status(200).send({});
     return;
   } else {
-    const prData = doc.data();
+    const prData = doc.data() as PrDoc;
     console.log("Document data:", JSON.stringify(prData));
     if (!prData.tracking) {
       res.status(200).send({});
@@ -262,7 +275,7 @@ async function eventApproved(res, body) {
  * @param {!express:Request} req HTTP request context.
  * @param {!express:Response} res HTTP response context.
  */
-exports.handler = async (req, res) => {
+export const handler: HttpFunction = async (req, res) => {
   const body = req.body;
   const headers = req.headers;
 

@@ -6,7 +6,7 @@ steps:
       - bitbucketevents
       - --source=https://source.developers.google.com/projects/horvbot/repos/github_dr-horv_horvbot/moveable-aliases/master/paths/src/bitbucketevents/
       - --trigger-http
-      - --runtime=nodejs12
+      - --runtime=nodejs18
       - --region=europe-west1
       - --entry-point=handler
     waitFor: ["-"]
@@ -18,7 +18,7 @@ steps:
       - slackevents
       - --source=https://source.developers.google.com/projects/horvbot/repos/github_dr-horv_horvbot/moveable-aliases/master/paths/src/slackevents/
       - --trigger-http
-      - --runtime=nodejs12
+      - --runtime=nodejs18
       - --region=europe-west1
       - --entry-point=handler
     waitFor: ["-"]

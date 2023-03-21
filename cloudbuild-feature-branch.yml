@@ -1,0 +1,27 @@
+steps:
+  - name: gcr.io/cloud-builders/gcloud
+    args:
+      - functions
+      - deploy
+      - bitbucketevents
+      - >-
+        --source=https://source.developers.google.com/projects/horvbot/repos/github_dr-horv_horvbot/moveable-aliases/feature-typescript/paths/src/bitbucketevents/
+      - --trigger-http
+      - --runtime=nodejs18
+      - --region=europe-west1
+      - --entry-point=handler
+    waitFor:
+      - '-'
+  - name: gcr.io/cloud-builders/gcloud
+    args:
+      - functions
+      - deploy
+      - slackevents
+      - >-
+        --source=https://source.developers.google.com/projects/horvbot/repos/github_dr-horv_horvbot/moveable-aliases/feature-typescript/paths/src/slackevents/
+      - --trigger-http
+      - --runtime=nodejs18
+      - --region=europe-west1
+      - --entry-point=handler
+    waitFor:
+      - '-'

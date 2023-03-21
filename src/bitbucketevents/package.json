@@ -1,12 +1,19 @@
 {
-  "name": "sample-http",
+  "name": "bitbucketevents",
   "version": "0.0.1",
-  "main": "index.js",
+  "main": "build/index.js",
+  "scripts": {
+    "gcp-build": "yarn run build",
+    "build": "tsc",
+    "start": "yarn run build && npx @google-cloud/functions-framework --target=handler"
+  },
   "dependencies": {
     "firebase-admin": "^8.13.0",
     "@slack/web-api": "^5.10.0"
   },
   "devDependencies": {
-    "prettier": "^2.0.5"
+    "@google-cloud/functions-framework": "^3.1.3",
+    "prettier": "^2.8.6",
+    "typescript": "^5.0.2"
   }
 }
