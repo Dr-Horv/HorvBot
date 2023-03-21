@@ -6,6 +6,7 @@ import {
   Response,
 } from "@google-cloud/functions-framework";
 import { LinkSharedEvent } from "./slackEvents";
+import { PrDoc } from "./PrDoc";
 
 admin.initializeApp();
 
@@ -87,7 +88,7 @@ async function handleLinkSharedEvent(
       const doc = await docRef.get();
       const channel = req.body.event.channel;
       const messageTimestamp = req.body.event.message_ts;
-      const data = {
+      const data: PrDoc = {
         channel,
         messageTimestamp,
         tracking: true,
