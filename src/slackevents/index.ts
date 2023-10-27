@@ -74,7 +74,8 @@ async function handleLinkSharedEvent(
           .split("/")
           .slice(3, 7)
           .join(":")
-          .replace("pull-requests", "pullrequests");
+          .replace("pull-requests", "pullrequests")
+          .replace(/#.*$/, '');
       } catch (e) {
         return undefined;
       }
